@@ -1,0 +1,18 @@
+{
+  "name": "krishimitra-monorepo",
+  "version": "1.0.0",
+  "description": "Unified workspace for KrishiMitra Frontend and Backend",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix frontend && npm install --prefix backend",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build:all": "npm run build --prefix frontend && npm run build --prefix backend",
+    "start": "npm run start --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.6"
+  }
+}

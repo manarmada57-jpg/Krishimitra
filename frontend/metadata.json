@@ -1,0 +1,6 @@
+{
+  "name": "KrishiMitra",
+  "description": "An AI-powered smart farming companion for Indian farmers, featuring weather insights, satellite maps, crop health analytics, farm logistics/expense tracking, yield predictions, and voice-supported Krishi AI diagnostics.",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
