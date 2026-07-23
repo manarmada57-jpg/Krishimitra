@@ -16,8 +16,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnp
 .pnp.js
-package-lock.json
-**/package-lock.json
+# package-lock.json — NOT ignored, needed for cloud deployments (Render/Vercel)
 
 # ─── Build output ─────────────────────────────────────────────────────────────
 dist/
