@@ -60,6 +60,11 @@ app.post("/api/chat", requireAuth, AssistantController.sendMessage);
 app.post("/api/diagnose", requireAuth, CropController.diagnoseCrop);
 app.post("/api/predict-yield", requireAuth, CropController.predictYield);
 
+// Root endpoint for simple checks and Render defaults
+app.get("/", (_req, res) => {
+  res.status(200).send("KrishiMitra API Server is running!");
+});
+
 // Simple heartbeat endpoint
 app.get("/health", (_req, res) => {
   res.status(200).json({ 

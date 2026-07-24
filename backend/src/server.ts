@@ -23,7 +23,7 @@ async function bootstrap() {
   initializeSockets(server);
 
   // 4. Start listening for incoming connections
-  server.listen(PORT, () => {
+  server.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 KrishiMitra API Server running on port ${PORT} in [${env.NODE_ENV}] mode.`);
   });
 }
