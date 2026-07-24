@@ -2,11 +2,11 @@
   "name": "krishimitra-backend",
   "version": "1.0.0",
   "description": "Production Express + Mongoose + TypeScript Backend for KrishiMitra",
-  "main": "src/server.ts",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "npm install",
-    "start": "tsx src/server.ts"
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@google/genai": "^2.12.0",

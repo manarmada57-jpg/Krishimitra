@@ -1,5 +1,4 @@
 import { Schema, model, Document } from "mongoose";
-import { GoogleGenAI } from "@google/genai";
 import { env } from "../../config/env";
 
 export interface IAssistantChat extends Document {
@@ -24,14 +23,15 @@ const assistantChatSchema = new Schema<IAssistantChat>(
 export const AssistantChatModel = model<IAssistantChat>("AssistantChat", assistantChatSchema);
 
 export class AssistantService {
-  private static aiClient: GoogleGenAI | null = null;
+  private static aiClient: any = null;
 
-  private static getGeminiClient(): GoogleGenAI | null {
+  private static async getGeminiClient(): Promise<any> {
     if (this.aiClient) return this.aiClient;
     
     const apiKey = env.GEMINI_API_KEY;
     // Verify that key is a real key and not the example placeholder
     if (apiKey && apiKey !== "MY_GEMINI_API_KEY" && apiKey !== "") {
+      const { GoogleGenAI } = await import("@google/genai");
       this.aiClient = new GoogleGenAI({
         apiKey,
         httpOptions: {
@@ -74,7 +74,7 @@ export class AssistantService {
     await this.saveMessage(userId, "user", message);
 
     let replyText = "";
-    const ai = this.getGeminiClient();
+    const ai = await this.getGeminiClient();
 
     if (ai) {
       try {

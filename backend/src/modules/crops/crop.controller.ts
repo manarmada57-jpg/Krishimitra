@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { CropService } from "./crop.service";
-import { GoogleGenAI } from "@google/genai";
 import { env } from "../../config/env";
 
 export class CropController {
@@ -71,12 +70,13 @@ export class CropController {
     }
   }
 
-  private static aiClient: GoogleGenAI | null = null;
+  private static aiClient: any = null;
 
-  private static getGeminiClient(): GoogleGenAI | null {
+  private static async getGeminiClient(): Promise<any> {
     if (this.aiClient) return this.aiClient;
     const apiKey = env.GEMINI_API_KEY;
     if (apiKey && apiKey !== "MY_GEMINI_API_KEY" && apiKey !== "") {
+      const { GoogleGenAI } = await import("@google/genai");
       this.aiClient = new GoogleGenAI({
         apiKey,
         httpOptions: {
@@ -103,7 +103,7 @@ export class CropController {
       }
 
       const isMock = typeof image === "string" && image.startsWith("MOCK_IMAGE_TEMPLATE_");
-      const ai = CropController.getGeminiClient();
+      const ai = await CropController.getGeminiClient();
 
       if (ai && !isMock) {
         const imagePart = {
@@ -165,7 +165,7 @@ export class CropController {
       const { crop, soil, acreage, water, fertilizer, location, language } = req.body;
       const isHindi = language === "hi";
 
-      const ai = CropController.getGeminiClient();
+      const ai = await CropController.getGeminiClient();
 
       if (ai) {
         const promptText = isHindi
