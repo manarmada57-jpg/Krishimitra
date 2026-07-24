@@ -29,7 +29,12 @@ export class WeatherService {
       console.log(`☁️ [Weather] Cache-miss. Querying live weather for lat=${lat}, lng=${lng}`);
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_max&current_weather=true&timezone=auto`;
       
-      const response = await fetch(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
         throw new Error(`Open-Meteo API returned status: ${response.status}`);
       }
