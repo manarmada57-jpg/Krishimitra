@@ -65,6 +65,9 @@ export async function apiFetch<T = any>(
               // 2. Retry the original request with the new access token
               headers.set("Authorization", `Bearer ${newAccess}`);
               response = await fetch(url, fetchOptions);
+            } else {
+              console.warn("🔑 Token rotation returned unsuccessful status. Logging out.");
+              handleForceLogout();
             }
           } else {
             // Refresh token expired or invalid -> logout user
@@ -73,7 +76,11 @@ export async function apiFetch<T = any>(
           }
         } catch (refreshErr) {
           console.error("🔑 Token rotation network error:", refreshErr);
+          handleForceLogout();
         }
+      } else {
+        console.warn("🔑 No refresh token found on 401. Logging out user.");
+        handleForceLogout();
       }
     }
 
@@ -94,6 +101,8 @@ function handleForceLogout() {
   localStorage.removeItem("krishimitra_username");
   localStorage.removeItem("krishimitra_location_id");
   localStorage.removeItem("krishimitra_onboarded");
+  localStorage.removeItem("krishimitra_farmer_profile");
+  localStorage.removeItem("krishimitra_active_farm_id");
   // Reload page to trigger Auth screen redirect
   window.location.reload();
 }
