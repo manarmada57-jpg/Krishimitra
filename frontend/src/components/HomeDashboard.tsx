@@ -34,8 +34,11 @@ export default function HomeDashboard({ language, onNavigate, onOpenLocationSett
 
   // Dynamic API fetching from backend based on active farm profile
   useEffect(() => {
+    const farmId = farmProfile.id || (farmProfile as any)._id;
+    if (!farmId) return;
+
     // 1. Fetch user crops and sync active health score & NDVI
-    apiFetch("/api/crops")
+    apiFetch(`/api/crops/farm/${farmId}`)
       .then(res => {
         if (res.success && Array.isArray(res.data) && res.data.length > 0) {
           setDbCrops(res.data);
@@ -95,7 +98,7 @@ export default function HomeDashboard({ language, onNavigate, onOpenLocationSett
         const locKey = resolveLocationKey(dist);
         setMandiHighlight(mockMandiPresets[locKey]);
       });
-  }, [farmProfile.locationName, farmProfile.cropName]);
+  }, [farmProfile.id, (farmProfile as any)._id, farmProfile.locationName, farmProfile.cropName]);
 
   const activeAlerts = mockAlerts.slice(0, 2);
 

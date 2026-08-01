@@ -10,13 +10,13 @@ const router = Router();
  * Requires: ?lat=<number>&lng=<number>
  * Optional: ?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
  */
-router.get("/satellite-insights", requireAuth, VedasController.getSatelliteInsights);
+router.get("/satellite-insights", VedasController.getSatelliteInsights);
 
 /**
  * GET /api/crops/vedas-wms-config
  * Returns WMS endpoint and layer names for frontend Leaflet map.
  */
-router.get("/vedas-wms-config", requireAuth, VedasController.getWmsConfig);
+router.get("/vedas-wms-config", VedasController.getWmsConfig);
 
 /**
  * DELETE /api/crops/satellite-insights/cache

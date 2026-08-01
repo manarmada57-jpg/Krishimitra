@@ -32,7 +32,36 @@ import {
 } from "lucide-react";
 
 function InnerApp() {
-  const { farmProfile, updateFarmProfile } = useFarmProfile();
+  const { farmProfile, farms, activeFarmId, selectActiveFarm, createFarm, updateFarmProfile, refreshFromBackend } = useFarmProfile();
+
+  // States for creating a new farm from the settings modal
+  const [showCreateFarmSection, setShowCreateFarmSection] = useState(false);
+  const [newFarmName, setNewFarmName] = useState("");
+  const [newFarmLat, setNewFarmLat] = useState(22.3395);
+  const [newFarmLng, setNewFarmLng] = useState(77.0984);
+  const [newFarmCrop, setNewFarmCrop] = useState("Wheat");
+  const [newFarmArea, setNewFarmArea] = useState(2.5);
+  const [creatingFarm, setCreatingFarm] = useState(false);
+
+  const handleCreateFarmFromModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFarmName.trim()) return;
+    setCreatingFarm(true);
+    await createFarm({
+      locationName: newFarmName.trim(),
+      lat: newFarmLat,
+      lng: newFarmLng,
+      cropName: newFarmCrop,
+      farmAreaAcres: newFarmArea,
+    });
+    setCreatingFarm(false);
+    setShowCreateFarmSection(false);
+    setNewFarmName("");
+    setNewFarmLat(22.3395);
+    setNewFarmLng(77.0984);
+    setNewFarmCrop("Wheat");
+    setNewFarmArea(2.5);
+  };
 
   // Safe default language
   const [language, setLanguage] = useState<Language>(() => {
@@ -71,6 +100,7 @@ function InnerApp() {
     localStorage.removeItem("krishimitra_location_id");
     localStorage.removeItem("krishimitra_onboarded");
     localStorage.removeItem("krishimitra_farmer_profile");
+    localStorage.removeItem("krishimitra_active_farm_id");
     setOnboarded(false);
     setIsAuthenticated(false);
   };
@@ -191,6 +221,8 @@ function InnerApp() {
           setOnboarded(true);
           setIsAuthenticated(true);
           localStorage.setItem("krishimitra_onboarded", "true");
+          // Refresh from backend to load the MongoDB farm created during onboarding
+          setTimeout(() => refreshFromBackend(), 500);
         }}
       />
     );
@@ -289,6 +321,68 @@ function InnerApp() {
                 {language === "hi" ? "किसान प्रोफ़ाइल व खेत सेटिंग्स" : "Farm Profile Settings"}
               </h3>
             </div>
+
+            {/* Farm switcher section */}
+            {farms.length > 0 && (
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 space-y-2">
+                <p className="text-xxs font-extrabold text-emerald-700 uppercase tracking-wider">
+                  {language === "hi" ? "🌾 सक्रिय खेत बदलें" : "🌾 Switch Active Farm"}
+                </p>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={activeFarmId || ""}
+                    onChange={(e) => { selectActiveFarm(e.target.value); setShowSettingsModal(false); }}
+                    className="flex-1 bg-white border border-emerald-200 text-sm font-bold text-gray-800 px-3 py-2 rounded-xl outline-none cursor-pointer focus:border-emerald-500"
+                  >
+                    {farms.map((f) => (
+                      <option key={f.id} value={f.id} className="bg-white text-gray-800">
+                        {f.locationName}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateFarmSection(s => !s)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded-xl cursor-pointer shrink-0"
+                  >
+                    {showCreateFarmSection ? "−" : "+"}
+                  </button>
+                </div>
+                {showCreateFarmSection && (
+                  <form onSubmit={handleCreateFarmFromModal} className="space-y-2 pt-1">
+                    <input
+                      type="text"
+                      placeholder={language === "hi" ? "नए खेत का नाम" : "New farm name"}
+                      value={newFarmName}
+                      onChange={(e) => setNewFarmName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                      required
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="number" step="0.0001" placeholder="Latitude" value={newFarmLat}
+                        onChange={(e) => setNewFarmLat(parseFloat(e.target.value) || 0)}
+                        className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono text-gray-800 focus:outline-none focus:border-emerald-500" required />
+                      <input type="number" step="0.0001" placeholder="Longitude" value={newFarmLng}
+                        onChange={(e) => setNewFarmLng(parseFloat(e.target.value) || 0)}
+                        className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono text-gray-800 focus:outline-none focus:border-emerald-500" required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Crop" value={newFarmCrop}
+                        onChange={(e) => setNewFarmCrop(e.target.value)}
+                        className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:outline-none focus:border-emerald-500" required />
+                      <input type="number" step="0.1" placeholder="Area (acres)" value={newFarmArea}
+                        onChange={(e) => setNewFarmArea(parseFloat(e.target.value) || 0)}
+                        className="px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 focus:outline-none focus:border-emerald-500" required />
+                    </div>
+                    <button type="submit" disabled={creatingFarm}
+                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer">
+                      {creatingFarm && <Loader2 size={12} className="animate-spin" />}
+                      <span>{language === "hi" ? "नया खेत जोड़ें" : "Add Farm"}</span>
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>

@@ -14,7 +14,7 @@ export async function apiFetch<T = any>(
   path: string, 
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-  const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000"; // Express backend url
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || ""; // Express backend url
   const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
 
   let token = localStorage.getItem("krishimitra_access_token");

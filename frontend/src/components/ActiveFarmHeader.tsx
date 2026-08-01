@@ -8,7 +8,7 @@ interface ActiveFarmHeaderProps {
 }
 
 export default function ActiveFarmHeader({ language, onOpenSettings }: ActiveFarmHeaderProps) {
-  const { farmProfile } = useFarmProfile();
+  const { farmProfile, farms, activeFarmId, selectActiveFarm } = useFarmProfile();
   const isHi = language === "hi";
 
   return (
@@ -29,12 +29,26 @@ export default function ActiveFarmHeader({ language, onOpenSettings }: ActiveFar
                 👨‍🌾 {farmProfile.farmerName}
               </span>
             </div>
-            <h2 className="text-base font-black tracking-tight text-white font-display flex items-center gap-1.5 mt-0.5">
-              <span>{farmProfile.locationName}</span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <select
+                value={activeFarmId || ""}
+                onChange={(e) => selectActiveFarm(e.target.value)}
+                className="bg-emerald-950/80 border border-emerald-500/30 text-white font-extrabold font-display text-xs sm:text-sm px-2 py-1 rounded-xl outline-none cursor-pointer focus:border-emerald-400"
+              >
+                {farms.length > 0 ? (
+                  farms.map((f) => (
+                    <option key={f.id} value={f.id} className="bg-slate-900 text-white">
+                      {f.locationName}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" className="bg-slate-900 text-white">{farmProfile.locationName}</option>
+                )}
+              </select>
               <span className="text-gray-400 text-xs font-mono font-normal">
                 ({farmProfile.lat.toFixed(3)}°, {farmProfile.lng.toFixed(3)}°)
               </span>
-            </h2>
+            </div>
           </div>
         </div>
 

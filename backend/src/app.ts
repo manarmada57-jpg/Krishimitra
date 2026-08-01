@@ -23,9 +23,20 @@ import { CropController } from "./modules/crops/crop.controller";
 
 const app = express();
 
-// Middleware stack
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  "https://krishimitra-coral.vercel.app",
+  "http://localhost:5173"
+].filter(Boolean);
+
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: "20mb" }));

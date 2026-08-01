@@ -42,7 +42,10 @@ export default function CropHealth({ language, onNavigate }: CropHealthProps) {
   const [newExpectedHarvest, setNewExpectedHarvest] = useState<string>("2026-10-15");
 
   const fetchCrops = () => {
-    apiFetch("/api/crops")
+    const farmId = farmProfile.id || (farmProfile as any)._id;
+    const fetchUrl = farmId ? `/api/crops/farm/${farmId}` : "/api/crops";
+
+    apiFetch(fetchUrl)
       .then(res => {
         if (res.success && Array.isArray(res.data) && res.data.length > 0) {
           const mappedCrops: Crop[] = res.data.map((c: any, index: number) => ({
@@ -115,17 +118,24 @@ export default function CropHealth({ language, onNavigate }: CropHealthProps) {
 
   useEffect(() => {
     fetchCrops();
-  }, [farmProfile.cropName, farmProfile.sowingDate]);
+  }, [farmProfile.id, (farmProfile as any)._id, farmProfile.cropName, farmProfile.sowingDate]);
 
   const handleAddCropSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCropName) return;
+
+    const farmId = farmProfile.id || (farmProfile as any)._id;
+    if (!farmId) {
+      alert("No active farm profile found");
+      return;
+    }
 
     setSubmitting(true);
     const cleanName = newCropName.split("(")[0].trim();
     const response = await apiFetch("/api/crops", {
       method: "POST",
       body: JSON.stringify({
+        farm: farmId,
         name: cleanName,
         nameHi: cleanName === "Soybean" ? "सोयाबीन" : cleanName === "Wheat" ? "गेहूं" : cleanName === "Paddy" ? "धान" : cleanName,
         stage: newStage || "Sowing",

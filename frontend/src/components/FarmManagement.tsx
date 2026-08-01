@@ -21,7 +21,9 @@ import {
   Save,
   MapPin,
   Layers,
-  Droplets
+  Droplets,
+  X,
+  Loader2
 } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
@@ -30,9 +32,51 @@ interface FarmManagementProps {
 }
 
 export default function FarmManagement({ language }: FarmManagementProps) {
-  const { farmProfile, updateFarmProfile } = useFarmProfile();
+  const { farmProfile, farms, activeFarmId, selectActiveFarm, createFarm, updateFarmProfile } = useFarmProfile();
   const t = translations[language];
   const isHi = language === "hi";
+
+  // Create Farm Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newLocationName, setNewLocationName] = useState("");
+  const [newLat, setNewLat] = useState(22.3395);
+  const [newLng, setNewLng] = useState(77.0984);
+  const [newCrop, setNewCrop] = useState("Wheat");
+  const [newArea, setNewArea] = useState(2.5);
+  const [newWater, setNewWater] = useState("Canal");
+  const [newSoil, setNewSoil] = useState("Black Soil");
+  const [newIrrig, setNewIrrig] = useState(true);
+  const [creating, setCreating] = useState(false);
+
+  const handleCreateFarmSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLocationName.trim()) return;
+
+    setCreating(true);
+    const created = await createFarm({
+      locationName: newLocationName.trim(),
+      lat: newLat,
+      lng: newLng,
+      cropName: newCrop,
+      farmAreaAcres: newArea,
+      waterSource: newWater,
+      soilType: newSoil,
+      hasIrrigation: newIrrig,
+    });
+    setCreating(false);
+
+    if (created) {
+      setShowCreateModal(false);
+      setNewLocationName("");
+      setNewLat(22.3395);
+      setNewLng(77.0984);
+      setNewCrop("Wheat");
+      setNewArea(2.5);
+      setNewWater("Canal");
+      setNewSoil("Black Soil");
+      setNewIrrig(true);
+    }
+  };
 
   // 0. Active Profile Form Edit states
   const [editFarmerName, setEditFarmerName] = useState(farmProfile.farmerName);
@@ -243,16 +287,36 @@ export default function FarmManagement({ language }: FarmManagementProps) {
 
       {/* FARM PROFILE EDIT FORM CARD */}
       <div className="bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-900 text-white rounded-3xl p-6 shadow-xl border border-emerald-500/30 space-y-5">
-        <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-emerald-500/20 pb-3 gap-3">
           <div className="flex items-center gap-2.5">
             <Edit3 className="text-emerald-400" size={22} />
             <h2 className="text-lg font-black text-white font-display">
               {isHi ? "सक्रिय खेत प्रोफ़ाइल (Single Source of Truth)" : "Active Farm Profile (Single Source of Truth)"}
             </h2>
           </div>
-          <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full font-mono font-bold border border-emerald-500/30">
-            {farmProfile.farmerName} &bull; {farmProfile.locationName}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-emerald-300 text-xs font-bold shrink-0">{isHi ? "खेत चुनें:" : "Select Farm:"}</span>
+            <select
+              value={activeFarmId || ""}
+              onChange={(e) => selectActiveFarm(e.target.value)}
+              className="bg-emerald-900/60 border border-emerald-500/35 text-white font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer outline-none"
+            >
+              {farms.length > 0 ? (
+                farms.map((f) => (
+                  <option key={f.id} value={f.id} className="bg-slate-900 text-white">{f.locationName}</option>
+                ))
+              ) : (
+                <option value="" className="bg-slate-900 text-white">{farmProfile.locationName}</option>
+              )}
+            </select>
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xxs font-black px-2.5 py-1.5 rounded-lg border border-emerald-500/35 cursor-pointer shrink-0"
+            >
+              {isHi ? "+ नया खेत" : "+ New Farm"}
+            </button>
+          </div>
         </div>
 
         {saveSuccessMsg && (
@@ -741,6 +805,165 @@ export default function FarmManagement({ language }: FarmManagementProps) {
           )}
         </div>
       </div>
+
+      {/* Create New Farm Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-gray-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-150 p-6 space-y-5 relative">
+            <button 
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1.5 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+              <PlusCircle className="text-agri-green" size={20} />
+              <h3 className="text-lg font-bold text-gray-900 font-display">
+                {isHi ? "नया कृषि प्रक्षेत्र पंजीकृत करें" : "Register New Farm Block"}
+              </h3>
+            </div>
+
+            <form onSubmit={handleCreateFarmSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  {isHi ? "खेत का नाम / स्थान" : "Farm / Location Name"}
+                </label>
+                <input 
+                  type="text"
+                  value={newLocationName}
+                  onChange={(e) => setNewLocationName(e.target.value)}
+                  placeholder="e.g. Harda Block A"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "अक्षांश (Latitude)" : "Latitude"}
+                  </label>
+                  <input 
+                    type="number"
+                    step="0.0001"
+                    value={newLat}
+                    onChange={(e) => setNewLat(parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 text-xs font-mono font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "देशांतर (Longitude)" : "Longitude"}
+                  </label>
+                  <input 
+                    type="number"
+                    step="0.0001"
+                    value={newLng}
+                    onChange={(e) => setNewLng(parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 text-xs font-mono font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "मुख्य फसल" : "Crop Name"}
+                  </label>
+                  <input 
+                    type="text"
+                    value={newCrop}
+                    onChange={(e) => setNewCrop(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "क्षेत्रफल (एकड़)" : "Area (Acres)"}
+                  </label>
+                  <input 
+                    type="number"
+                    step="0.1"
+                    value={newArea}
+                    onChange={(e) => setNewArea(parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "पानी का स्रोत" : "Water Source"}
+                  </label>
+                  <select 
+                    value={newWater}
+                    onChange={(e) => setNewWater(e.target.value)}
+                    className="w-full bg-white border border-gray-200 text-sm font-semibold px-3 py-2.5 rounded-xl outline-none text-gray-800 focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Canal">Canal</option>
+                    <option value="Tubewell / Borewell">Tubewell</option>
+                    <option value="Rainfed">Rainfed</option>
+                    <option value="Open Well">Open Well</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    {isHi ? "मिट्टी का प्रकार" : "Soil Type"}
+                  </label>
+                  <select 
+                    value={newSoil}
+                    onChange={(e) => setNewSoil(e.target.value)}
+                    className="w-full bg-white border border-gray-200 text-sm font-semibold px-3 py-2.5 rounded-xl outline-none text-gray-800 focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Black Soil">Black Soil</option>
+                    <option value="Alluvial Soil">Alluvial Soil</option>
+                    <option value="Red Soil">Red Soil</option>
+                    <option value="Sandy Soil">Sandy Soil</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 py-1">
+                <input 
+                  type="checkbox"
+                  id="new-has-irrigation"
+                  checked={newIrrig}
+                  onChange={(e) => setNewIrrig(e.target.checked)}
+                  className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                />
+                <label htmlFor="new-has-irrigation" className="text-xs font-bold text-gray-600 cursor-pointer">
+                  {isHi ? "सिंचाई सुविधा उपलब्ध है" : "Irrigation facility available"}
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  {isHi ? "रद्द करें" : "Cancel"}
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="flex-1 py-3 bg-agri-green hover:bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {creating && <Loader2 size={14} className="animate-spin" />}
+                  <span>{isHi ? "खेत जोड़ें" : "Register Farm"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );
