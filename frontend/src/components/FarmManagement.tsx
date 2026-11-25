@@ -5,14 +5,11 @@ import { apiFetch } from "../utils/api";
 import { 
   PlusCircle, 
   Trash2, 
-  Calculator, 
   Coins, 
   HelpCircle, 
-  CheckCircle2, 
   Search, 
   ExternalLink,
   ChevronRight,
-  Sparkles,
   TrendingUp,
   Sprout,
   DollarSign,
@@ -220,47 +217,6 @@ export default function FarmManagement({ language }: FarmManagementProps) {
 
   const PIE_COLORS = ["#2E7D32", "#FF9800", "#1E3A8A", "#9333EA", "#EF4444", "#06B6D4"];
 
-  // 2. Yield Predictor states
-  const [predictorCrop, setPredictorCrop] = useState(farmProfile.cropName);
-  const [predictorSoil, setPredictorSoil] = useState(farmProfile.soilType);
-  const [predictorAcreage, setPredictorAcreage] = useState(farmProfile.farmAreaAcres.toString());
-  const [predictorWater, setPredictorWater] = useState(farmProfile.waterSource);
-  const [predictorFertilizer, setPredictorFertilizer] = useState("Balanced DAP/NPK");
-  const [isPredicting, setIsPredicting] = useState(false);
-  const [predictionReport, setPredictionReport] = useState<string | null>(null);
-
-  const handlePredictYield = async () => {
-    setIsPredicting(true);
-    setPredictionReport(null);
-
-    try {
-      const response = await apiFetch("/api/predict-yield", {
-        method: "POST",
-        body: JSON.stringify({
-          crop: predictorCrop,
-          soil: predictorSoil,
-          acreage: predictorAcreage,
-          water: predictorWater,
-          fertilizer: predictorFertilizer,
-          location: farmProfile.locationName,
-          language
-        })
-      });
-
-      if (!response.success || !response.data) throw new Error("Yield prediction failed");
-      const resData = response.data as any;
-      setPredictionReport(resData.prediction);
-    } catch (err) {
-      console.error(err);
-      setPredictionReport(
-        isHi
-          ? "एआई पूर्वानुमान सर्वर से संपर्क विफल। कृपया भौतिक गणना विधि का उपयोग करें।"
-          : "AI Yield calculator returned offline fallback. Review crop area variables."
-      );
-    } finally {
-      setIsPredicting(false);
-    }
-  };
 
   // 3. Government Scheme states
   const [schemeQuery, setSchemeQuery] = useState("");
@@ -600,121 +556,6 @@ export default function FarmManagement({ language }: FarmManagementProps) {
 
       </div>
 
-      {/* 2. Yield Prediction Calculator */}
-      <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-6">
-        <div>
-          <h3 className="font-bold text-gray-900 font-display text-lg flex items-center gap-2">
-            <Calculator className="text-agri-green" size={20} />
-            {t.yieldCalculator}
-          </h3>
-          <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
-            {isHi 
-              ? "आपकी बोई फसल, एकड़ आकार, मिट्टी की गुणवत्ता और पानी की उपलब्धता के आधार पर संभावित फसल उत्पादन (क्विंटलों में) और न्यूनतम समर्थन मूल्य (MSP) आमदनी की गणना।" 
-              : "Dynamic simulations powered by Gemini Flash checking soil NPK factors, crop strains and irrigation metrics with current central MSP averages."}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          
-          <div className="space-y-1.5">
-            <label className="text-xxs text-gray-400 font-bold uppercase tracking-wider block">{isHi ? "फसल प्रकार" : "Crop selection"}</label>
-            <select 
-              id="select-pred-crop"
-              value={predictorCrop}
-              onChange={(e) => setPredictorCrop(e.target.value)}
-              className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 focus:outline-none focus:border-agri-green p-3 rounded-2xl cursor-pointer"
-            >
-              <option value="Wheat">Wheat (गेहूँ)</option>
-              <option value="Soybean">Soybean (सोयाबीन)</option>
-              <option value="Cotton">Cotton (कपास)</option>
-              <option value="Rice Paddy">Paddy Rice (धान)</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xxs text-gray-400 font-bold uppercase tracking-wider block">{isHi ? "भूमि आकार (Acre)" : "Land Area (Acre)"}</label>
-            <input 
-              id="input-pred-acreage"
-              type="number"
-              value={predictorAcreage}
-              onChange={(e) => setPredictorAcreage(e.target.value)}
-              placeholder="e.g. 2.5"
-              className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 focus:outline-none focus:border-agri-green p-3 rounded-2xl font-mono"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xxs text-gray-400 font-bold uppercase tracking-wider block">{isHi ? "मिट्टी गुणवत्ता" : "Soil Structure"}</label>
-            <select 
-              id="select-pred-soil"
-              value={predictorSoil}
-              onChange={(e) => setPredictorSoil(e.target.value)}
-              className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 focus:outline-none focus:border-agri-green p-3 rounded-2xl cursor-pointer"
-            >
-              <option value="Black Basaltic Soil">Black Cotton Soil (काली मिट्टी)</option>
-              <option value="Alluvial Loamy">Alluvial Soil (जलोढ़ मिट्टी)</option>
-              <option value="Sandy Loam">Red Sandy (लाल दोमट)</option>
-              <option value="Heavy Clay Silt">Clayey Soil (चिकनी भारी)</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xxs text-gray-400 font-bold uppercase tracking-wider block">{isHi ? "सिंचाई/पानी साधन" : "Water Irrigation Source"}</label>
-            <select 
-              id="select-pred-water"
-              value={predictorWater}
-              onChange={(e) => setPredictorWater(e.target.value)}
-              className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 focus:outline-none focus:border-agri-green p-3 rounded-2xl cursor-pointer"
-            >
-              <option value="Tubewell / Ground Aquifer">Tubewell bore (नलकूप)</option>
-              <option value="Canal System Supply">Canal Channel (नहर)</option>
-              <option value="Drip Irrigation Optimized">Optimized Drip Loop (टपक सिंचाई)</option>
-              <option value="Rainfed purely">Monsoon rainfed (वर्षा सिंचित)</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xxs text-gray-400 font-bold uppercase tracking-wider block">{isHi ? "उर्वरक/खाद उपयोग" : "Fertility Dosage applied"}</label>
-            <select 
-              id="select-pred-fertilizer"
-              value={predictorFertilizer}
-              onChange={(e) => setPredictorFertilizer(e.target.value)}
-              className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 focus:outline-none focus:border-agri-green p-3 rounded-2xl cursor-pointer"
-            >
-              <option value="Standard Organic Compost Only">Only Organic manure (जैविक खाद)</option>
-              <option value="DAP + Urea balanced dosage">Balanced DAP + Urea feeds (डीएपी+यूरिया)</option>
-              <option value="High chemical dosage NPK">Heavy NPK chemical doses (अधिक रसायन)</option>
-            </select>
-          </div>
-
-        </div>
-
-        <div className="flex justify-end pt-2">
-          <button 
-            id="btn-trigger-yield-prediction"
-            onClick={handlePredictYield}
-            disabled={isPredicting || !predictorAcreage}
-            className="bg-agri-green hover:bg-agri-dark text-white font-display font-bold text-sm px-6 py-3.5 rounded-2xl flex items-center gap-2 shadow-md transition-all border border-green-50 cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles size={16} />
-            {isPredicting ? t.predicting : t.predictButton}
-          </button>
-        </div>
-
-        {predictionReport && (
-          <div className="bg-emerald-50/50 border border-emerald-100 rounded-3xl p-5 shadow-xxs fade-in">
-            <div className="flex items-center gap-2 text-agri-dark font-display font-bold text-sm uppercase tracking-wide mb-3">
-              <CheckCircle2 size={18} className="text-agri-green" />
-              {t.yieldEstimate}
-            </div>
-
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line font-medium space-y-1.5">
-              {predictionReport}
-            </div>
-          </div>
-        )}
-
-      </div>
 
       {/* 3. Government Scheme Suggestions List */}
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-6">

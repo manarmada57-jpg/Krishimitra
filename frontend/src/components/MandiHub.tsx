@@ -8,7 +8,6 @@ import {
   MapPin, 
   Layers, 
   ArrowRightLeft, 
-  Sparkles, 
   Bell, 
   CloudRain, 
   Camera, 
@@ -197,9 +196,7 @@ export default function MandiHub({ language }: MandiHubProps) {
   const [alertsEnabled, setAlertsEnabled] = useState<boolean>(false);
   const [simulatedAlertMessage, setSimulatedAlertMessage] = useState<string | null>(null);
   
-  // AI prediction state
-  const [predicting, setPredicting] = useState<boolean>(false);
-  const [aiPredictionResult, setAiPredictionResult] = useState<string | null>(null);
+
 
   // Quality Grading Scanner States
   const [scanning, setScanning] = useState<boolean>(false);
@@ -272,44 +269,7 @@ export default function MandiHub({ language }: MandiHubProps) {
 
   const trendData = generateTrendData(activeMandiItem?.modalPrice || 2500);
 
-  // Trigger Gemini AI price forecast & demand analysis
-  const handleTriggerPrediction = async () => {
-    setPredicting(true);
-    setAiPredictionResult(null);
 
-    try {
-      const data = await apiFetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({
-          message: isHindi 
-            ? `आप कृषि विपणन विशेषज्ञ और आर्थिक सलाहकार हैं। कृपया ${activeMandiItem?.commodityHi} (${activeMandiItem?.varietyHi} किस्म) के लिए भोपाल/स्थानीय मंडियों की वर्तमान दर ₹${activeMandiItem?.modalPrice}/क्विंटल को देखते हुए अगले 3 महीनों के लिए बाजार मांग विश्लेषण और एआई मूल्य पूर्वानुमान प्रदान करें। 
-               कृपया निम्नलिखित शीर्षकों का उपयोग करें:
-               1. **अनुमानित मूल्य सीमा (Estimated Price Range)**: न्यूनतम और अधिकतम दरें (₹ में)
-               2. **बाजार मांग की स्थिति (Market Demand State)**: (उच्च/मध्यम/कम) और इसके प्रमुख कारण
-               3. **फसल बिक्री/संग्रहण सलाह (Sell/Hold Advice)**: किसानों को अभी बेचना चाहिए या संग्रहित करना चाहिए, विवरण दें।`
-            : `You are an expert agricultural economist and Agmarknet market analyst. Given the current modal rate of ₹${activeMandiItem?.modalPrice}/Quintal for ${activeMandiItem?.commodity} (${activeMandiItem?.variety} variety) in the ${activeMandiItem?.mandiName} market, provide an expert AI price prediction and market demand analysis for the next 3 months (July to September 2026).
-               Include:
-               1. **Expected Price Trend**: Estimated minimum and maximum price range in ₹/Qtl.
-               2. **Market Demand analysis**: Is the demand high, average, or dropping and what global/national policies are driving this?
-               3. **Farmer Advisory (Sell or Hold)**: Step-by-step recommendation on whether they should sell now or store in cold warehouse for higher returns in August/Sept. Keep it highly legible and structured.`,
-          language
-        })
-      });
-
-      const resData = data.data as any;
-      const reply = resData?.reply || (data as any).reply;
-      if (reply) {
-        setAiPredictionResult(reply);
-      } else {
-        setAiPredictionResult(isHindi ? "सर्वर से पूर्वानुमान प्राप्त करने में समस्या हुई।" : "Unable to retrieve price prediction forecast from server node.");
-      }
-    } catch (err) {
-      console.error(err);
-      setAiPredictionResult(isHindi ? "एआई नेटवर्क कनेक्शन विफल रहा।" : "AI prediction connection timed out.");
-    } finally {
-      setPredicting(false);
-    }
-  };
 
   // Simulated AI photograph grading analysis
   const handleTriggerCropGrading = async (presetId: string) => {
@@ -820,90 +780,6 @@ export default function MandiHub({ language }: MandiHubProps) {
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* BLOCK B: COGNITIVE 3-MONTH AI PRICE FORECAST */}
-      <div className="bg-gradient-to-br from-slate-900 via-emerald-950 to-gray-950 rounded-3xl border border-emerald-500/10 p-6 md:p-8 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        
-        <div className="relative space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 text-xxs font-extrabold px-3 py-1 rounded-md uppercase tracking-wider border border-amber-500/10">
-                <Sparkles size={12} className="animate-pulse" />
-                {isHindi ? "एआई मांग व मूल्य भविष्यवक्ता" : "Cognitive Demand & Market Forecaster"}
-              </span>
-              <h2 className="text-xl md:text-2xl font-bold font-display tracking-tight text-white">
-                {isHindi 
-                  ? `क्या आपको ${activeMandiItem?.commodityHi} को अभी बेचना चाहिए या इंतजार करना चाहिए?` 
-                  : `Should you sell your ${activeMandiItem?.commodity} now, or hold?`}
-              </h2>
-              <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
-                {isHindi 
-                  ? "कृषि मित्र एआई आगामी मानसून की स्थिति, निर्यात आयात नीति, थोक आवक की गति और ऐतिहासिक बाजार रुझानों का आकलन करके विश्लेषण प्रस्तुत करता है।" 
-                  : "KrishiMitra AI compiles daily crop warehouse storage trends, regional rainfall status, national export tariffs, and Agmarknet arrivals to compute absolute advisories."}
-              </p>
-            </div>
-
-            <button
-              onClick={handleTriggerPrediction}
-              disabled={predicting}
-              className="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl text-xs font-extrabold tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-orange-500/20 active:scale-98 cursor-pointer disabled:opacity-75"
-            >
-              {predicting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>{isHindi ? "बाजार डेटा का आकलन हो रहा है..." : "CALCULATING PRICE PATHS..."}</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={16} />
-                  <span>{isHindi ? "भविष्यवाणी प्राप्त करें 🔮" : "RUN AI PRICE FORECAST 🔮"}</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Prediction Result Panel */}
-          {aiPredictionResult ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 space-y-4 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></div>
-                  <span className="text-xs font-extrabold text-emerald-400 tracking-widest uppercase">
-                    {isHindi ? "एआई विश्लेषण पूर्ण" : "GENAI CALIBRATION SUCCESS"}
-                  </span>
-                </div>
-                <span className="text-xxs font-mono text-gray-400 font-bold">Model: Gemini-3.5-flash</span>
-              </div>
-
-              <div className="prose prose-sm prose-invert max-w-none text-xs text-slate-200 space-y-2 whitespace-pre-wrap leading-relaxed">
-                {aiPredictionResult}
-              </div>
-
-              <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-[11px] text-gray-300 flex items-start gap-2">
-                <Info size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                <p>
-                  {isHindi 
-                    ? "नोट: यह केवल सांख्यिकीय और नीतिगत विश्लेषण पर आधारित एक उन्नत अनुमान है। कृपया वास्तविक बिक्री का निर्णय स्थानीय बाजार की परिस्थितियों को देखकर स्वयं लें।" 
-                    : "Disclaimer: This model uses deep predictive patterns and policies. Daily localized supply changes may affect actual rates; finalize decisions in consultation with your local APMC representative."}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white/5 border border-white/5 p-8 rounded-2.5xl text-center space-y-2">
-              <TrendingUp className="mx-auto text-gray-500 animate-bounce-slow" size={32} />
-              <p className="text-sm font-bold text-gray-300">
-                {isHindi ? "3-महीने का मूल्य भविष्यवाणी प्रपत्र खाली है।" : "AI 3-Month Price Prediction Deck is Idle."}
-              </p>
-              <p className="text-xs text-gray-400 max-w-md mx-auto">
-                {isHindi 
-                  ? "ऊपर दिए गए 'भविष्यवाणी प्राप्त करें' बटन को दबाएं ताकि जेमिनी एआई राष्ट्रीय बाजार कारकों का विश्लेषण कर सके।" 
-                  : "Tap the amber button above to trigger an intelligent context evaluation on agricultural trends."}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
