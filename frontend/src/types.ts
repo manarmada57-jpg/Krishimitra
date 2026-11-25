@@ -95,7 +95,7 @@ export const translations = {
     navCrops: "Crops",
     navWeather: "Weather",
     navMarket: "Mandi Hub",
-    navProfile: "Farm Hub", // Includes Expenses, Yield Predictor, Schemes
+    navProfile: "Farm Hub", // Includes Profile, Expenses, Schemes
     allHealthy: "All crops are looking stable today",
     lowMoisture: "Attention: Low soil moisture in Crop Field B",
     rainExpected: "Rain expected tomorrow afternoon (~12mm)",
@@ -137,9 +137,6 @@ export const translations = {
     expenseTracker: "Farm Expense Log",
     addExpense: "Log New Expense",
     expensePlaceholder: "Rent tractor, buy Urea, wages...",
-    yieldCalculator: "Smart Yield Prediction Model",
-    predictButton: "Calculate Predicted Production",
-    predicting: "Simulating farm output with AI...",
     schemesTitle: "Indian Government Farming Initiatives",
     searchSchemes: "Search Schemes (e.g. Fasal Bima)...",
     benefits: "Benefits Offered:",
@@ -148,7 +145,6 @@ export const translations = {
     organicSolution: "Organic & Physical Remediation",
     chemicalSolution: "Chemical Remediation Recommendation",
     preventionTips: "Proactive Protection Measures",
-    yieldEstimate: "Dynamic Yield Estimation report",
     rupees: "₹"
   },
   hi: {
@@ -212,9 +208,6 @@ export const translations = {
     expenseTracker: "कृषि खर्च बहीखाता (Log)",
     addExpense: "खर्च एंट्री जोड़ें",
     expensePlaceholder: "ट्रैक्टर किराया, यूरिया खाद, मजदूरी...",
-    yieldCalculator: "उन्नत उपज पूर्वानुमान मॉडल",
-    predictButton: "उपज पूर्वानुमान की गणना करें",
-    predicting: "AI द्वारा उत्पादन की गणना की जा रही है...",
     schemesTitle: "सरकारी किसान योजनाएं एवं सहायता",
     searchSchemes: "योजना खोजें (जैसे: बीमा, सम्मान निधि)...",
     benefits: "मिलने वाले वित्तीय लाभ:",
@@ -223,7 +216,6 @@ export const translations = {
     organicSolution: "जैविक/प्राकृतिक समाधान",
     chemicalSolution: "आवश्यक रसायन छिड़काव उपचार",
     preventionTips: "भविष्य के लिए सुरक्षा उपाय",
-    yieldEstimate: "अनुमानित उत्पादन पूर्वानुमान रिपोर्ट",
     rupees: "₹"
   }
 };

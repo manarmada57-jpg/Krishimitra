@@ -190,8 +190,8 @@ export default function HomeDashboard({ language, onNavigate, onOpenLocationSett
           className="flex items-center justify-between p-4 bg-white hover:bg-emerald-50 rounded-2xl border border-gray-100 transition-all text-left shadow-xs hover:border-emerald-300 group cursor-pointer"
         >
           <div>
-            <p className="text-xs text-gray-400 font-medium">{isHi ? "कृषि गणना" : "Calculators"}</p>
-            <h3 className="font-bold text-gray-800 font-display mt-0.5">{isHi ? "उपज व बहीखाता" : "Yield & Log"}</h3>
+            <p className="text-xs text-gray-400 font-medium">{isHi ? "फार्म प्रबंधन" : "Farm Hub"}</p>
+            <h3 className="font-bold text-gray-800 font-display mt-0.5">{isHi ? "व्यय व बहीखाता" : "Expenses & Log"}</h3>
           </div>
           <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-agri-green group-hover:text-white transition-colors text-agri-dark">
             <TrendingUp size={20} />
