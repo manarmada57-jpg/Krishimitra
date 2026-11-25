@@ -40,6 +40,8 @@ export async function apiFetch<T = any>(
     // 1. Intercept 401 and try to refresh token
     if (response.status === 401) {
       const refreshToken = localStorage.getItem("krishimitra_refresh_token");
+      const hadToken = !!token || !!refreshToken;
+
       if (refreshToken) {
         console.log("🔑 Access token expired. Attempting token rotation...");
         try {
@@ -78,9 +80,12 @@ export async function apiFetch<T = any>(
           console.error("🔑 Token rotation network error:", refreshErr);
           handleForceLogout();
         }
-      } else {
-        console.warn("🔑 No refresh token found on 401. Logging out user.");
+      } else if (hadToken) {
+        console.warn("🔑 Token invalid/expired with no refresh token. Logging out user.");
         handleForceLogout();
+      } else {
+        // User was never authenticated, do not trigger logout or loop reloads
+        console.warn(`🔒 Endpoint ${path} requires authentication.`);
       }
     }
 
@@ -96,6 +101,7 @@ export async function apiFetch<T = any>(
 }
 
 function handleForceLogout() {
+  const hadToken = !!localStorage.getItem("krishimitra_access_token") || !!localStorage.getItem("krishimitra_refresh_token");
   localStorage.removeItem("krishimitra_access_token");
   localStorage.removeItem("krishimitra_refresh_token");
   localStorage.removeItem("krishimitra_username");
@@ -103,6 +109,9 @@ function handleForceLogout() {
   localStorage.removeItem("krishimitra_onboarded");
   localStorage.removeItem("krishimitra_farmer_profile");
   localStorage.removeItem("krishimitra_active_farm_id");
-  // Reload page to trigger Auth screen redirect
-  window.location.reload();
+
+  // Only dispatch logout event to update React state smoothly without infinite reload loops
+  if (hadToken) {
+    window.dispatchEvent(new Event("krishimitra_auth_logout"));
+  }
 }

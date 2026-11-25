@@ -93,6 +93,16 @@ function InnerApp() {
     localStorage.setItem("krishimitra_lang", language);
   }, [language]);
 
+  // Listen for auth logout event from apiFetch (session expiry) to cleanly show login without infinite reloads
+  useEffect(() => {
+    const onAuthLogout = () => {
+      setOnboarded(false);
+      setIsAuthenticated(false);
+    };
+    window.addEventListener("krishimitra_auth_logout", onAuthLogout);
+    return () => window.removeEventListener("krishimitra_auth_logout", onAuthLogout);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("krishimitra_access_token");
     localStorage.removeItem("krishimitra_refresh_token");

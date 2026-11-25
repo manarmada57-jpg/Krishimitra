@@ -149,6 +149,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sync weather telemetry (including real 7-day forecast) for active farm coordinates
   useEffect(() => {
     if (!farmProfile.lat || !farmProfile.lng) return;
+    const token = localStorage.getItem("krishimitra_access_token");
+    if (!token) return; // Only fetch protected weather API if authenticated
+
     apiFetch(`/api/weather/forecast?lat=${farmProfile.lat}&lng=${farmProfile.lng}`)
       .then(res => {
         if (res.success && res.data) {
